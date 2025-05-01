@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHC Yearly Customer Check-In Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <div class="flex justify-center mb-6">
+            <img src="https://www.softwareworld.co/assets/software/logo/mhc-software.png" alt="MHC Logo" class="h-72">
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">MHC Yearly Customer Check-In</h1>
+        <p class="text-gray-600 mb-6">Please fill out the form below to update your information. All fields marked with an asterisk (*) are required.</p>
+        
+        <form id="checkinForm" class="space-y-6" onsubmit="handleSubmit(event)">
+            <!-- Company Name -->
+            <div>
+                <label for="companyName" class="block text-sm font-medium text-gray-700">Company Name *</label>
+                <input type="text" id="companyName" name="companyName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Company Name Change, Rebranding, or Acquisition -->
+            <div>
+                <label for="nameChange" class="block text-sm font-medium text-gray-700">Has there been a company name change, rebranding, or acquisition? *</label>
+                <select id="nameChange" name="nameChange" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select an option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <input type="text" id="newCompanyName" name="newCompanyName" placeholder="If yes, please specify details" class="mt-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+            </div>
+
+            <!-- Billing Address -->
+            <div>
+                <label for="billingAddress" class="block text-sm font-medium text-gray-700">Billing Address *</label>
+                <textarea id="billingAddress" name="billingAddress" required rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Primary Contacts -->
+            <div>
+                <label for="primaryContacts" class="block text-sm font-medium text-gray-700">Primary Contacts for IMS (Name and Contact Details) *</label>
+                <textarea id="primaryContacts" name="primaryContacts" required rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Current Contacts List -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Review and Update Current Contacts *</label>
+                <p class="text-sm text-gray-500 mb-2">Please review the list of current contacts below. Edit, add, or remove contacts as needed.</p>
+                <div id="contactsList" class="space-y-4">
+                    <!-- Sample Contact 1 -->
+                    <div class="contact-entry flex space-x-2 items-end">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                            <input type="text" name="contactName[]" value="John Doe" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                            <input type="email" name="contactEmail[]" value="john.doe@example.com" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+                    </div>
+                    <!-- Sample Contact 2 -->
+                    <div class="contact-entry flex space-x-2 items-end">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                            <input type="text" name="contactName[]" value="Jane Smith" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                            <input type="email" name="contactEmail[]" value="jane.smith@example.com" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+                    </div>
+                </div>
+                <button type="button" onclick="addContact()" class="mt-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">Add Contact</button>
+            </div>
+
+            <!-- IMS Platform -->
+            <div>
+                <label for="imsPlatform" class="block text-sm font-medium text-gray-700">IMS Platform *</label>
+                <select id="imsPlatform" name="imsPlatform" required class="mt-1 block W-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select an option</option>
+                    <option value="AS400 (IBMi)">AS400 (IBMi)</option>
+                    <option value="PC Version (Windows)">PC Version (Windows)</option>
+                </select>
+            </div>
+
+            <!-- IMS Version -->
+            <div>
+                <label for="imsVersion" class="block text-sm font-medium text-gray-700">IMS Version *</label>
+                <p class="text-sm text-gray-500 mb-2">For IBMi clients, use the command <code>VSDSPVER</code>. For Windows clients, check the Administrator Console.</p>
+                <input type="text" id="imsVersion" name="imsVersion" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Upcoming Projects -->
+            <div>
+                <label for="projects" class="block text-sm font-medium text-gray-700">Any upcoming or ongoing projects where MHC can provide a solution?</label>
+                <textarea id="projects" name="projects" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- IMS Feedback -->
+            <div>
+                <label for="imsFeedback" class="block text-sm font-medium text-gray-700">How is IMS working for you?</label>
+                <textarea id="imsFeedback" name="imsFeedback" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Initialize EmailJS with your public key
+        emailjs.init('zcK3iQPSWLZVCI9S4');
+
+        // Array to track removed contacts
+        let removedContacts = [];
+
+        // Show/hide new company name field based on name change selection
+        document.getElementById('nameChange').addEventListener('change', function() {
+            const newCompanyNameField = document.getElementById('newCompanyName');
+            newCompanyNameField.classList.toggle('hidden', this.value !== 'Yes');
+            if (this.value === 'Yes') {
+                newCompanyNameField.required = true;
+            } else {
+                newCompanyNameField.required = false;
+            }
+        });
+
+        // Add new contact fields
+        function addContact() {
+            const contactsList = document.getElementById('contactsList');
+            const contactDiv = document.createElement('div');
+            contactDiv.className = 'contact-entry flex space-x-2 items-end';
+            contactDiv.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                    <input type="text" name="contactName[]" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                    <input type="email" name="contactEmail[]" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+            `;
+            contactsList.appendChild(contactDiv);
+        }
+
+        // Remove contact fields and track removed contacts
+        function removeContact(button) {
+            const contactsList = document.getElementById('contactsList');
+            if (contactsList.children.length > 1) {
+                const contactEntry = button.parentElement;
+                const name = contactEntry.querySelector('input[name="contactName[]"]').value;
+                const email = contactEntry.querySelector('input[name="contactEmail[]"]').value;
+                if (name || email) {
+                    removedContacts.push({ name, email });
+                }
+                contactEntry.remove();
+            } else {
+                alert('At least one contact is required.');
+            }
+        }
+
+        // Handle form submission
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = {};
+            const contacts = [];
+            
+            // Collect contact data
+            const contactNames = form.querySelectorAll('input[name="contactName[]"]');
+            const contactEmails = form.querySelectorAll('input[name="contactEmail[]"]');
+            for (let i = 0; i < contactNames.length; i++) {
+                contacts.push({
+                    name: contactNames[i].value,
+                    email: contactEmails[i].value
+                });
+            }
+            
+            // Collect other form data
+            formData.forEach((value, key) => {
+                if (key !== 'contactName[]' && key !== 'contactEmail[]') {
+                    data[key] = value;
+                }
+            });
+            data.contacts = contacts;
+
+            // Format contacts for email
+            const contactsString = contacts.map(c => `Name: ${c.name}, Email: ${c.email}`).join('\n');
+            const removedContactsString = removedContacts.length > 0
+                ? removedContacts.map(c => `Name: ${c.name}, Email: ${c.email}`).join('\n')
+                : 'None';
+
+            // Prepare EmailJS parameters
+            const emailParams = {
+                companyName: data.companyName || 'N/A',
+                nameChange: data.nameChange || 'N/A',
+                newCompanyName: data.newCompanyName || 'N/A',
+                billingAddress: data.billingAddress || 'N/A',
+                primaryContacts: data.primaryContacts || 'N/A',
+                contacts: contactsString || 'No contacts provided',
+                removedContacts: removedContactsString,
+                imsPlatform: data.imsPlatform || 'N/A',
+                imsVersion: data.imsVersion || 'N/A',
+                projects: data.projects || 'None provided',
+                imsFeedback: data.imsFeedback || 'None provided',
+                to_email: 'helpdesk@vansystems.com'
+            };
+
+            console.log('Form Submission Data:', JSON.stringify(data, null, 2));
+            console.log('EmailJS Parameters:', JSON.stringify(emailParams, null, 2));
+
+            // Send email via EmailJS
+            emailjs.send('service_kgsesu8', 'template_s2k1ynq', emailParams)
+                .then((response) => {
+                    console.log('EmailJS Success:', response);
+                    alert('Thank you for your submission! Your information has been sent to our helpdesk.');
+                    form.reset();
+                    document.getElementById('newCompanyName').classList.add('hidden');
+                    // Reset contacts to initial state and clear removed contacts
+                    removedContacts = [];
+                    const contactsList = document.getElementById('contactsList');
+                    contactsList.innerHTML = `
+                        <div class="contact-entry flex space-x-2 items-end">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                                <input type="text" name="contactName[]" value="John Doe" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                                <input type="email" name="contactEmail[]" value="john.doe@example.com" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+                        </div>
+                        <div class="contact-entry flex space-x-2 items-end">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                                <input type="text" name="contactName[]" value="Jane Smith" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                                <input type="email" name="contactEmail[]" value="jane.smith@example.com" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+                        </div>
+                    `;
+                }, (error) => {
+                    console.error('EmailJS Error:', JSON.stringify(error, null, 2));
+                    alert('There was an error submitting the form: ' + (error.text || 'Unknown error. Please check the console for details.'));
+                });
+        }
+    </script>
+</body>
+</html>
