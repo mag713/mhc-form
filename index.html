@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+    <div id="formContainer" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
         <div class="flex justify-center mb-6">
             <img src="https://www.softwareworld.co/assets/software/logo/mhc-software.png" alt="MHC Logo" class="h-72">
         </div>
@@ -91,11 +91,20 @@
         </form>
     </div>
 
+    <div id="thankYouMessage" class="hidden bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center">
+        <div class="flex justify-center mb-6">
+            <img src="https://www.softwareworld.co/assets/software/logo/mhc-software.png" alt="MHC Logo" class="h-72">
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Thank You!</h1>
+        <p class="text-gray-600 mb-4">We sincerely appreciate you taking the time to complete this information update.</p>
+        <p class="text-gray-600 mb-4">MHC will update our records to reflect your submission. If you have any questions, please contact our helpdesk at <a href="mailto:helpdesk@vansystems.com" class="text-indigo-600 hover:underline">helpdesk@vansystems.com</a>.</p>
+    </div>
+
     <script>
         // Initialize EmailJS with your public key
         emailjs.init('zcK3iQPSWLZVCI9S4');
 
-        // Arrays to track removed and added contacts
+        // Arrays to track contacts
         let removedContacts = [];
         let addedContacts = [];
         let originalContacts = [];
@@ -107,7 +116,6 @@
 
         // Populate contacts from URL query parameter
         function populateContacts() {
-            // Normalize URL to remove multiple trailing slashes
             const url = new URL(window.location.href.replace(/\/+$/, ''));
             const urlParams = new URLSearchParams(url.search);
             const contactsParam = urlParams.get('contacts');
@@ -125,7 +133,6 @@
                     console.log('Decoded Contacts Length:', decoded.length);
                     contacts = JSON.parse(decoded);
                     console.log('Parsed Contacts:', JSON.stringify(contacts, null, 2));
-                    // Validate contacts array
                     if (!Array.isArray(contacts) || contacts.length === 0) {
                         throw new Error('Parsed contacts array is invalid or empty');
                     }
@@ -145,7 +152,7 @@
                 ];
             }
 
-            // Store original contacts for reference
+            // Store original contacts
             originalContacts = contacts.map(c => ({ name: c.name, email: c.email }));
 
             contacts.forEach(contact => {
@@ -183,15 +190,11 @@
 
         document.addEventListener('DOMContentLoaded', initializeContacts);
 
-        // Show/hide new company name field based on name change selection
+        // Show/hide new company name field
         document.getElementById('nameChange').addEventListener('change', function() {
             const newCompanyNameField = document.getElementById('newCompanyName');
             newCompanyNameField.classList.toggle('hidden', this.value !== 'Yes');
-            if (this.value === 'Yes') {
-                newCompanyNameField.required = true;
-            } else {
-                newCompanyNameField.required = false;
-            }
+            newCompanyNameField.required = this.value === 'Yes';
         });
 
         // Add new contact fields
@@ -211,11 +214,9 @@
                 <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
             `;
             contactsList.appendChild(contactDiv);
-            // Track new contact with unique ID
-            const newContactId = `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-            addedContacts.push({ id: newContactId, name: '', email: '' });
-            contactDiv.dataset.contactId = newContactId; // Store ID in DOM
-            console.log('Added new contact:', addedContacts);
+            // Track new contact
+            addedContacts.push({ name: '', email: '', isNew: true });
+            console.log('Added new contact, Current addedContacts:', JSON.stringify(addedContacts, null, 2));
         }
 
         // Remove contact fields and track removed contacts
@@ -225,20 +226,15 @@
                 const contactEntry = button.parentElement;
                 const name = contactEntry.querySelector('input[name="contactName[]"]').value;
                 const email = contactEntry.querySelector('input[name="contactEmail[]"]').value;
-                const contactId = contactEntry.dataset.contactId;
 
-                if (name || email) {
-                    // Check if this is an added contact
-                    const addedIndex = addedContacts.findIndex(c => c.id === contactId);
-                    if (addedIndex !== -1) {
-                        // Remove from addedContacts if it was newly added
-                        addedContacts.splice(addedIndex, 1);
-                        console.log('Removed added contact:', { name, email }, 'Updated addedContacts:', addedContacts);
-                    } else {
-                        // Add to removedContacts if it was an original contact
-                        removedContacts.push({ name, email });
-                        console.log('Added to removedContacts:', { name, email });
-                    }
+                // Check if this is an added contact
+                const addedIndex = addedContacts.findIndex(c => c.name === name && c.email === email && c.isNew);
+                if (addedIndex !== -1) {
+                    addedContacts.splice(addedIndex, 1);
+                    console.log('Removed added contact:', { name, email }, 'Updated addedContacts:', JSON.stringify(addedContacts, null, 2));
+                } else if (name || email) {
+                    removedContacts.push({ name, email });
+                    console.log('Added to removedContacts:', { name, email });
                 }
 
                 contactEntry.remove();
@@ -256,19 +252,23 @@
             const contacts = [];
 
             // Collect contact data
-            const contactEntries = document.querySelectorAll('#contactsList .contact-entry');
-            contactEntries.forEach((entry, index) => {
-                const name = entry.querySelector('input[name="contactName[]"]').value;
-                const email = entry.querySelector('input[name="contactEmail[]"]').value;
-                const contactId = entry.dataset.contactId;
+            const contactNames = form.querySelectorAll('input[name="contactName[]"]');
+            const contactEmails = form.querySelectorAll('input[name="contactEmail[]"]');
+            contactNames.forEach((nameInput, index) => {
+                const name = nameInput.value;
+                const email = contactEmails[index].value;
                 const contact = { name, email };
-
                 contacts.push(contact);
 
-                // Update addedContacts if this is a new contact
-                const addedContactIndex = addedContacts.findIndex(c => c.id === contactId);
-                if (addedContactIndex !== -1) {
-                    addedContacts[addedContactIndex] = { name, email };
+                // Update or add to addedContacts if this is a new contact
+                const isOriginal = originalContacts.some(c => c.name === name && c.email === email);
+                if (!isOriginal) {
+                    const existingIndex = addedContacts.findIndex(c => c.name === name && c.email === email);
+                    if (existingIndex === -1) {
+                        addedContacts.push({ name, email, isNew: true });
+                    } else {
+                        addedContacts[existingIndex] = { name, email, isNew: true };
+                    }
                 }
             });
 
@@ -308,19 +308,20 @@
 
             console.log('Form Submission Data:', JSON.stringify(data, null, 2));
             console.log('Added Contacts:', JSON.stringify(addedContacts, null, 2));
+            console.log('Removed Contacts:', JSON.stringify(removedContacts, null, 2));
             console.log('EmailJS Parameters:', JSON.stringify(emailParams, null, 2));
 
             // Send email via EmailJS
             emailjs.send('service_kgsesu8', 'template_s2k1ynq', emailParams)
                 .then((response) => {
                     console.log('EmailJS Success:', response);
-                    alert('Thank you for your submission! Your information has been sent to our helpdesk.');
-                    form.reset();
-                    document.getElementById('newCompanyName').classList.add('hidden');
-                    // Reset contacts to initial state and clear removed/added contacts
+                    // Hide form and show thank-you message
+                    document.getElementById('formContainer').classList.add('hidden');
+                    document.getElementById('thankYouMessage').classList.remove('hidden');
+                    // Reset contacts
                     removedContacts = [];
                     addedContacts = [];
-                    populateContacts(); // Reload contacts from URL
+                    originalContacts = [];
                 }, (error) => {
                     console.error('EmailJS Error:', JSON.stringify(error, null, 2));
                     alert('There was an error submitting the form: ' + (error.text || 'Unknown error. Please check the console for details.'));
