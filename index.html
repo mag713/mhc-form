@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHC Yearly Customer Check-In Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div id="formContainer" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <div class="flex justify-center mb-6">
+            <img src="https://www.softwareworld.co/assets/software/logo/mhc-software.png" alt="MHC Logo" class="h-72">
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">MHC Yearly Customer Check-In</h1>
+        <p class="text-gray-600 mb-6">Please fill out the form below to update your information. All fields marked with an asterisk (*) are required.</p>
+        
+        <form id="checkinForm" class="space-y-6" onsubmit="handleSubmit(event)">
+            <!-- Company Name -->
+            <div>
+                <label for="companyName" class="block text-sm font-medium text-gray-700">Company Name *</label>
+                <input type="text" id="companyName" name="companyName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Company Name Change, Rebranding, or Acquisition -->
+            <div>
+                <label for="nameChange" class="block text-sm font-medium text-gray-700">Has there been a company name change, rebranding, or acquisition? *</label>
+                <select id="nameChange" name="nameChange" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select an option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <input type="text" id="newCompanyName" name="newCompanyName" placeholder="If yes, please specify details" class="mt-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm hidden">
+            </div>
+
+            <!-- Billing Address -->
+            <div>
+                <label for="billingAddress" class="block text-sm font-medium text-gray-700">Billing Address *</label>
+                <textarea id="billingAddress" name="billingAddress" required rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Primary Contacts -->
+            <div>
+                <label for="primaryContacts" class="block text-sm font-medium text-gray-700">Primary Contacts for IMS (Name and Contact Details) *</label>
+                <textarea id="primaryContacts" name="primaryContacts" required rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Current Contacts List -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Review and Update Current Contacts *</label>
+                <p class="text-sm text-gray-500 mb-2">Please review the list of current contacts below. Edit, add, or remove contacts as needed.</p>
+                <div id="contactsList" class="space-y-4">
+                    <!-- Contacts will be populated dynamically -->
+                </div>
+                <button type="button" onclick="addContact()" class="mt-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">Add Contact</button>
+            </div>
+
+            <!-- IMS Platform -->
+            <div>
+                <label for="imsPlatform" class="block text-sm font-medium text-gray-700">IMS Platform *</label>
+                <select id="imsPlatform" name="imsPlatform" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select an option</option>
+                    <option value="AS400 (IBMi)">AS400 (IBMi)</option>
+                    <option value="SQL Version">SQL Version</option>
+                </select>
+            </div>
+
+            <!-- IMS Version -->
+            <div>
+                <label for="imsVersion" class="block text-sm font-medium text-gray-700">IMS Version *</label>
+                <p class="text-sm text-gray-500 mb-2">For IBMi clients, use the command <code>VSDSPVER</code>. For Windows clients, check the Administrator Console TABLE MAINTENANCE > *DEFAULTS > IMSVERSION.</p>
+                <input type="text" id="imsVersion" name="imsVersion" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Pro SaaS Interest -->
+            <div class="relative">
+                <label for="proSaaSInterest" class="block text-sm font-medium text-gray-700">
+                    Would you be interested in learning more about our Pro SaaS program? *
+                    <span class="group inline-block ml-2">
+                        <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full cursor-pointer">i</span>
+                        <span class="absolute left-0 mt-2 w-64 p-2 text-sm text-gray-700 bg-gray-100 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                            What is Pro-SaaS? Pro-SaaS, which is also referred to as Professional Services as a Service, is a service option that allows customers the ability to have access to MHC’s highly skilled Professional Services Team on an ongoing basis. After your initial project is complete, or you have run out of hours, MHC offers a new service that allows you to take advantage of procuring services like service. By making an annual commitment (x hours per month for a 12-month term), customers can receive a discounted rate. Think of it as a Services Retainer Service.
+                        </span>
+                    </span>
+                </label>
+                <select id="proSaaSInterest" name="proSaaSInterest" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Select an option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No, not at this time">No, not at this time</option>
+                </select>
+            </div>
+
+            <!-- Upcoming Projects -->
+            <div>
+                <label for="projects" class="block text-sm font-medium text-gray-700">Could you share any upcoming projects where MHC could offer valuable solutions?</label>
+                <textarea id="projects" name="projects" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- IMS Feedback -->
+            <div>
+                <label for="imsFeedback" class="block text-sm font-medium text-gray-700">How is IMS performing for you, and do you have any feedback on its effectiveness?</label>
+                <textarea id="imsFeedback" name="imsFeedback" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="thankYouMessage" class="hidden bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl text-center">
+        <div class="flex justify-center mb-6">
+            <img src="https://www.softwareworld.co/assets/software/logo/mhc-software.png" alt="MHC Logo" class="h-72">
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Thank You!</h1>
+        <p class="text-gray-600 mb-4">We sincerely appreciate you taking the time to complete this information update.</p>
+        <p class="text-gray-600 mb-4">MHC will update our records to reflect your submission. If you have any questions, please contact our helpdesk at <a href="mailto:helpdesk@vansystems.com" class="text-indigo-600 hover:underline">helpdesk@vansystems.com</a>.</p>
+    </div>
+
+    <script>
+        // Initialize EmailJS with your public key
+        emailjs.init('zcK3iQPSWLZVCI9S4');
+
+        // Arrays to track contacts
+        let removedContacts = [];
+        let addedContacts = [];
+        let originalContacts = [];
+
+        // Sanitize string to prevent injection
+        function sanitizeString(str) {
+            return str.replace(/[<>"'&]/g, '');
+        }
+
+        // Populate contacts from URL query parameter
+        function populateContacts() {
+            const url = new URL(window.location.href.replace(/\/+$/, ''));
+            const urlParams = new URLSearchParams(url.search);
+            const contactsParam = urlParams.get('contacts');
+            const contactsList = document.getElementById('contactsList');
+            contactsList.innerHTML = ''; // Clear default contacts
+
+            let contacts = [];
+            try {
+                console.log('Normalized URL:', url.toString());
+                console.log('Raw Contacts Parameter:', contactsParam);
+                console.log('Raw Contacts Length:', contactsParam ? contactsParam.length : 0);
+                if (contactsParam) {
+                    const decoded = decodeURIComponent(contactsParam);
+                    console.log('Decoded Contacts Parameter:', decoded);
+                    console.log('Decoded Contacts Length:', decoded.length);
+                    contacts = JSON.parse(decoded);
+                    console.log('Parsed Contacts:', JSON.stringify(contacts, null, 2));
+                    if (!Array.isArray(contacts) || contacts.length === 0) {
+                        throw new Error('Parsed contacts array is invalid or empty');
+                    }
+                } else {
+                    console.warn('No contacts parameter found in URL, using default contacts');
+                    contacts = [
+                        { name: "John Doe", email: "john.doe@example.com" },
+                        { name: "Jane Smith", email: "jane.smith@example.com" }
+                    ];
+                }
+            } catch (e) {
+                console.error('Error parsing contacts from URL:', e.message, e.stack);
+                console.warn('Falling back to default contacts due to parsing error');
+                contacts = [
+                    { name: "John Doe", email: "john.doe@example.com" },
+                    { name: "Jane Smith", email: "jane.smith@example.com" }
+                ];
+            }
+
+            // Store original contacts
+            originalContacts = contacts.map(c => ({ name: c.name, email: c.email }));
+
+            contacts.forEach(contact => {
+                if (contact.name && contact.email) {
+                    const contactDiv = document.createElement('div');
+                    contactDiv.className = 'contact-entry flex space-x-2 items-end';
+                    contactDiv.innerHTML = `
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                            <input type="text" name="contactName[]" value="${sanitizeString(contact.name)}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                            <input type="email" name="contactEmail[]" value="${sanitizeString(contact.email)}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+                    `;
+                    contactsList.appendChild(contactDiv);
+                } else {
+                    console.warn('Skipping invalid contact:', contact);
+                }
+            });
+        }
+
+        // Call populateContacts on page load with retry
+        function initializeContacts() {
+            try {
+                console.log('Check-In Form Loaded, Populating Contacts');
+                populateContacts();
+            } catch (e) {
+                console.error('Initial contact population failed, retrying:', e);
+                setTimeout(populateContacts, 100); // Retry after 100ms
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeContacts);
+
+        // Show/hide new company name field
+        document.getElementById('nameChange').addEventListener('change', function() {
+            const newCompanyNameField = document.getElementById('newCompanyName');
+            newCompanyNameField.classList.toggle('hidden', this.value !== 'Yes');
+            newCompanyNameField.required = this.value === 'Yes';
+        });
+
+        // Add new contact fields
+        function addContact() {
+            const contactsList = document.getElementById('contactsList');
+            const contactDiv = document.createElement('div');
+            contactDiv.className = 'contact-entry flex space-x-2 items-end';
+            contactDiv.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Contact Name</label>
+                    <input type="text" name="contactName[]" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700">Contact Email</label>
+                    <input type="email" name="contactEmail[]" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <button type="button" onclick="removeContact(this)" class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">Remove</button>
+            `;
+            contactsList.appendChild(contactDiv);
+            // Track new contact
+            addedContacts.push({ name: '', email: '', isNew: true });
+            console.log('Added new contact, Current addedContacts:', JSON.stringify(addedContacts, null, 2));
+        }
+
+        // Remove contact fields and track removed contacts
+        function removeContact(button) {
+            const contactsList = document.getElementById('contactsList');
+            if (contactsList.children.length > 1) {
+                const contactEntry = button.parentElement;
+                const name = contactEntry.querySelector('input[name="contactName[]"]').value;
+                const email = contactEntry.querySelector('input[name="contactEmail[]"]').value;
+
+                // Check if this is an added contact
+                const addedIndex = addedContacts.findIndex(c => c.name === name && c.email === email && c.isNew);
+                if (addedIndex !== -1) {
+                    addedContacts.splice(addedIndex, 1);
+                    console.log('Removed added contact:', { name, email }, 'Updated addedContacts:', JSON.stringify(addedContacts, null, 2));
+                } else if (name || email) {
+                    removedContacts.push({ name, email });
+                    console.log('Added to removedContacts:', { name, email });
+                }
+
+                contactEntry.remove();
+            } else {
+                alert('At least one contact is required.');
+            }
+        }
+
+        // Handle form submission
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = {};
+            const contacts = [];
+
+            // Collect contact data
+            const contactNames = form.querySelectorAll('input[name="contactName[]"]');
+            const contactEmails = form.querySelectorAll('input[name="contactEmail[]"]');
+            contactNames.forEach((nameInput, index) => {
+                const name = nameInput.value;
+                const email = contactEmails[index].value;
+                const contact = { name, email };
+                contacts.push(contact);
+
+                // Update or add to addedContacts if this is a new contact
+                const isOriginal = originalContacts.some(c => c.name === name && c.email === email);
+                if (!isOriginal) {
+                    const existingIndex = addedContacts.findIndex(c => c.name === name && c.email === email);
+                    if (existingIndex === -1) {
+                        addedContacts.push({ name, email, isNew: true });
+                    } else {
+                        addedContacts[existingIndex] = { name, email, isNew: true };
+                    }
+                }
+            });
+
+            // Collect other form data
+            formData.forEach((value, key) => {
+                if (key !== 'contactName[]' && key !== 'contactEmail[]') {
+                    data[key] = value;
+                }
+            });
+            data.contacts = contacts;
+
+            // Format contacts for email
+            const contactsString = contacts.map(c => `Name: ${c.name}, Email: ${c.email}`).join('\n');
+            const addedContactsString = addedContacts.length > 0
+                ? addedContacts.map(c => `Name: ${c.name}, Email: ${c.email}`).join('\n')
+                : 'None';
+            const removedContactsString = removedContacts.length > 0
+                ? removedContacts.map(c => `Name: ${c.name}, Email: ${c.email}`).join('\n')
+                : 'None';
+
+            // Prepare EmailJS parameters
+            const emailParams = {
+                companyName: data.companyName || 'N/A',
+                nameChange: data.nameChange || 'N/A',
+                newCompanyName: data.newCompanyName || 'N/A',
+                billingAddress: data.billingAddress || 'N/A',
+                primaryContacts: data.primaryContacts || 'N/A',
+                contacts: contactsString || 'No contacts provided',
+                addedContacts: addedContactsString,
+                removedContacts: removedContactsString,
+                imsPlatform: data.imsPlatform || 'N/A',
+                imsVersion: data.imsVersion || 'N/A',
+                proSaaSInterest: data.proSaaSInterest || 'N/A',
+                projects: data.projects || 'None provided',
+                imsFeedback: data.imsFeedback || 'None provided',
+                to_email: 'helpdesk@vansystems.com'
+            };
+
+            console.log('Form Submission Data:', JSON.stringify(data, null, 2));
+            console.log('Added Contacts:', JSON.stringify(addedContacts, null, 2));
+            console.log('Removed Contacts:', JSON.stringify(removedContacts, null, 2));
+            console.log('EmailJS Parameters:', JSON.stringify(emailParams, null, 2));
+
+            // Send email via EmailJS
+            emailjs.send('service_kgsesu8', 'template_s2k1ynq', emailParams)
+                .then((response) => {
+                    console.log('EmailJS Success:', response);
+                    // Hide form and show thank-you message
+                    document.getElementById('formContainer').classList.add('hidden');
+                    document.getElementById('thankYouMessage').classList.remove('hidden');
+                    // Reset contacts
+                    removedContacts = [];
+                    addedContacts = [];
+                    originalContacts = [];
+                }, (error) => {
+                    console.error('EmailJS Error:', JSON.stringify(error, null, 2));
+                    alert('There was an error submitting the form: ' + (error.text || 'Unknown error. Please check the console for details.'));
+                });
+        }
+    </script>
+</body>
+</html>
